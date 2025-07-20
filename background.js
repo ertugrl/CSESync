@@ -1,137 +1,237 @@
 // background.js - CSES Sync Background Service Worker
 
-// --- Utility Functions ---
+console.log("🚀 CSES Sync Background: Service Worker started and ready!");
 
-/**
- * Encodes a string to Base64.
- * GitHub API expects file content to be Base64 encoded.
- * @param {string} str The string to encode.
- * @returns {string} The Base64 encoded string.
- */
+// --- Utility Functions ---
 function encodeBase64(str) {
-    return btoa(unescape(encodeURIComponent(str)));
+    return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g, (match, p1) => {
+        return String.fromCharCode(parseInt(p1, 16));
+    }));
 }
 
-/**
- * Decodes a Base64 string. (Not strictly needed for this task, but good for completeness)
- * @param {string} str The Base64 string to decode.
- * @returns {string} The decoded string.
- */
 function decodeBase64(str) {
-    return decodeURIComponent(escape(atob(str)));
+    return decodeURIComponent(Array.prototype.map.call(atob(str), (c) => {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+    }).join(''));
 }
 
 // --- GitHub API Interaction ---
-
-/**
- * Creates or updates a file in a GitHub repository.
- * @param {string} owner The GitHub repository owner (username/organization).
- * @param {string} repo The GitHub repository name.
- * @param {string} path The path to the file in the repository (e.g., "problems/1068/README.md").
- * @param {string} content The content of the file (plain text).
- * @param {string} message The commit message.
- * @param {string} githubPat The Personal Access Token for GitHub authentication.
- * @returns {Promise<object>} A promise that resolves with the API response, or rejects with an error.
- */
-async function createOrUpdateGitHubFile(owner, repo, path, content, message, githubPat) {
+async function createOrUpdateGitHubFile(owner, repo, path, content, message, githubPat, maxRetries = 3) {
     const url = `https://api.github.com/repos/${owner}/${repo}/contents/${path}`;
-    const encodedContent = encodeBase64(content);
+    
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        try {
+            // Get existing file SHA if it exists (fresh each attempt)
+            let sha = null;
+            try {
+                const getResponse = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `token ${githubPat}`,
+                        'Accept': 'application/vnd.github.v3+json'
+                    }
+                });
+                
+                if (getResponse.ok) {
+                    const fileData = await getResponse.json();
+                    sha = fileData.sha;
+                    console.log(`📝 File exists (attempt ${attempt})`);
+                } else if (getResponse.status === 404) {
+                    console.log(`📝 File does not exist, creating new (attempt ${attempt})`);
+                } else {
+                    console.warn(`⚠️ Unexpected status checking file: ${getResponse.status}`);
+                }
+            } catch (error) {
+                console.log(`📝 Error checking file, will try to create new (attempt ${attempt})`);
+            }
 
-    // Prepare the request body
-    const body = {
-        message: message,
-        content: encodedContent,
-    };
+            // Create fresh request body for each attempt
+            const requestBody = {
+                message: message,
+                content: encodeBase64(content)
+            };
+            
+            if (sha) {
+                requestBody.sha = sha;
+            }
 
-    try {
-        const response = await fetch(url, {
-            method: 'PUT',
-            headers: {
-                'Authorization': `token ${githubPat}`,
-                'Accept': 'application/vnd.github.v3+json',
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(body)
-        });
+            const response = await fetch(url, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `token ${githubPat}`,
+                    'Accept': 'application/vnd.github.v3+json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(requestBody)
+            });
 
-        if (!response.ok) {
-            const errorData = await response.json();
-            console.error('GitHub API Error:', response.status, response.statusText, errorData);
-            throw new Error(`GitHub API request failed: ${response.status} ${response.statusText} - ${errorData.message}`);
+            if (response.ok) {
+                console.log(`✅ GitHub API success on attempt ${attempt}`);
+                return await response.json();
+            }
+
+            // Handle errors
+            const errorText = await response.text();
+            let errorData;
+            try {
+                errorData = JSON.parse(errorText);
+            } catch (e) {
+                errorData = { message: errorText };
+            }
+            
+            // For 409 (conflict) or 422 (validation) errors, retry
+            if ((response.status === 409 || response.status === 422) && attempt < maxRetries) {
+                console.warn(`⚠️ GitHub API Error ${response.status} on attempt ${attempt}, retrying...`);
+                // Wait a bit before retry to avoid rapid requests
+                await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+                continue;
+            }
+            
+            // If we've exhausted retries or it's a different error, throw
+            throw new Error(`GitHub API Error: ${response.status} - ${errorData.message || 'Unknown error'}`);
+            
+        } catch (error) {
+            if (attempt === maxRetries) {
+                throw error;
+            }
+            console.warn(`⚠️ Attempt ${attempt} failed: ${error.message}, retrying...`);
+            await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
         }
-
-        const data = await response.json();
-        return data;
-
-    } catch (error) {
-        console.error('CSES Sync Background: Error in createOrUpdateGitHubFile:', error);
-        throw error;
     }
 }
 
 // --- Main Message Listener ---
-
-// Listen for messages from content scripts
 chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
-    console.log("CSES Sync Background: Message received from content script.");
-    console.log("Sender:", sender); 
-    console.log("Message data:", message);
+    if (message.type === "ACCEPTED_SUBMISSION" || (message.success && message.type === "ACCEPTED_SUBMISSION")) {
+        console.log("🎯 Processing ACCEPTED_SUBMISSION...");
+        
+        let problemData;
+        if (message.success !== undefined) {
+            if (!message.success) {
+                console.error("❌ Content script reported data extraction failure");
+                return;
+            }
+            problemData = message.data;
+        } else {
+            problemData = message.data;
+        }
+        
+        console.log(`📊 Data: ${problemData.problemName} (ID: ${problemData.problemId})`);
 
-    if (message.type === "PROBLEM_DATA") {
-        const problemData = message.data;
+        // Validation
+        if (!problemData.problemId || !problemData.problemName || !problemData.submittedCode) {
+            console.error("❌ Missing required data fields");
+            return;
+        }
 
-        // 1. Get PAT from storage
+        // Get PAT from storage
         const result = await chrome.storage.sync.get(['githubPat']);
         const githubPat = result.githubPat;
 
         if (!githubPat) {
-            console.error("CSES Sync Background: GitHub PAT not found in storage. Please set it in the extension popup.");
+            console.error("❌ GitHub PAT not found");
+            chrome.notifications.create({
+                type: 'basic',
+                iconUrl: 'icons/icon48.png',
+                title: 'CSES Sync Error',
+                message: 'GitHub PAT not set. Please configure in extension popup.',
+                priority: 2
+            });
             return; 
         }
 
-        // 2. Define GitHub repository details (For now, hardcode these or get from user settings later)
-        const owner = 'testUser9887'; // TODO: Replace with your GitHub username
-        const repo = 'testRepo';       // TODO: Replace with your GitHub repository name (e.g., 'CSES_Solutions')
+        // GitHub repository details
+        const owner = 'testUser9887'; // Your GitHub username
+        const repo = 'testRepo';  // Your repository name
 
-        // 3. Prepare file paths and content
-        const problemFolderPath = `CSES_Problems/${problemData.id}-${problemData.title.replace(/[^a-zA-Z0-9-]/g, '_')}`;
+        console.log(`🐙 Target: ${owner}/${repo}`);
+
+        // Check if this problem was already processed recently to prevent duplicates
+        const submissionKey = `${problemData.problemId}_${problemData.problemName}`;
+        const lastProcessed = await chrome.storage.local.get([submissionKey]);
+        const now = Date.now();
+        
+        if (lastProcessed[submissionKey] && (now - lastProcessed[submissionKey]) < 30000) { // 30 seconds cooldown
+            console.log(`⏳ Problem ${problemData.problemId} was processed recently, skipping to prevent duplicates`);
+            return;
+        }
+        
+        // Mark this problem as being processed
+        await chrome.storage.local.set({ [submissionKey]: now });
+
+        // Prepare file paths and content
+        const problemFolderPath = `CSES_Problems/${problemData.problemId}-${problemData.problemName.replace(/[^a-zA-Z0-9-]/g, '_')}`;
         const readmePath = `${problemFolderPath}/README.md`;
-        const codeFilePath = `${problemFolderPath}/solution.cpp`; 
+        const codeFilePath = `${problemFolderPath}/solution.cpp`;
 
-        // Content for README.md
-        const readmeContent = `# ${problemData.title} (ID: ${problemData.id})\n\n` +
-                              `**Problem Link:** [${problemData.url}](${problemData.url})\n\n` +
-                              `## Problem Description\n\n` +
-                              `// TODO: Problem description will be extracted here later. For now, it's a placeholder.\n\n` +
-                              `## Solution\n\n` +
-                              `// TODO: Your solution code will be pushed here later. For now, it's a placeholder.\n`;
+        // README content
+        let readmeContent = `# ${problemData.problemName} (ID: ${problemData.problemId})\n\n`;
+        readmeContent += `**Problem Link:** [${problemData.problemUrl}](${problemData.problemUrl})\n\n`;
+        
+        if (problemData.problemDescription) {
+            readmeContent += `## Problem Description\n\n${problemData.problemDescription}\n\n`;
+        } else {
+            readmeContent += `## Problem Description\n\n*Problem description will be extracted in future updates.*\n\n`;
+        }
+        
+        readmeContent += `## Solution\n\n\`\`\`cpp\n${problemData.submittedCode}\n\`\`\`\n`;
 
-        // Content for the code file (initially empty or with a template)
-        const codeFileContent = `// CSES Problem ${problemData.id}: ${problemData.title}\n` +
-                                `// Link: ${problemData.url}\n\n` +
-                                `// Your solution code here\n\n`;
+        // Code file content
+        let codeFileContent = `// CSES Problem ${problemData.problemId}: ${problemData.problemName}\n`;
+        codeFileContent += `// Link: ${problemData.problemUrl}\n`;
+        if (problemData.problemDescription && problemData.problemDescription.length > 0) {
+            const firstLine = problemData.problemDescription.split('\n')[0].substring(0, 80);
+            codeFileContent += `// Description: ${firstLine}...\n`;
+        }
+        codeFileContent += `\n${problemData.submittedCode}\n`;
 
         try {
-            console.log(`CSES Sync Background: Attempting to create/update README for ${problemData.title}...`);
-            const readmeResponse = await createOrUpdateGitHubFile(
-                owner, repo, readmePath, readmeContent, `Add CSES problem ${problemData.id}: ${problemData.title} README`, githubPat
+            console.log(`🚀 Creating README...`);
+            await createOrUpdateGitHubFile(
+                owner, repo, readmePath, readmeContent, `Add CSES problem ${problemData.problemId}: ${problemData.problemName} README`, githubPat
             );
-            console.log('CSES Sync Background: README created/updated successfully:', readmeResponse.content.html_url);
 
-            console.log(`CSES Sync Background: Attempting to create/update solution file for ${problemData.title}...`);
-            const codeFileResponse = await createOrUpdateGitHubFile(
-                owner, repo, codeFilePath, codeFileContent, `Add CSES problem ${problemData.id}: ${problemData.title} solution file`, githubPat
+            console.log(`🚀 Creating solution file...`);
+            await createOrUpdateGitHubFile(
+                owner, repo, codeFilePath, codeFileContent, `Add CSES problem ${problemData.problemId}: ${problemData.problemName} solution`, githubPat
             );
-            console.log('CSES Sync Background: Solution file created/updated successfully:', codeFileResponse.content.html_url);
 
-            // TODO: Send success notification to user (Task 4.1)
-            console.log(`CSES Sync: Successfully pushed ${problemData.title} to GitHub!`);
+            console.log(`🎉 SUCCESS: ${problemData.problemName} pushed to GitHub!`);
+            chrome.notifications.create({
+                type: 'basic',
+                iconUrl: 'icons/icon48.png',
+                title: 'CSES Sync Success!',
+                message: `Solution for "${problemData.problemName}" pushed to GitHub.`,
+                priority: 2
+            });
 
         } catch (error) {
-            console.error('CSES Sync Background: Failed to push files to GitHub:', error);
-            // TODO: Send error notification to user (Task 4.1)
+            console.error('❌ GitHub push failed:', error.message);
+            
+            // More specific error messages
+            let errorMessage = error.message;
+            if (error.message.includes('409')) {
+                errorMessage = 'File conflict detected. Multiple updates happening simultaneously.';
+            } else if (error.message.includes('422')) {
+                errorMessage = 'Invalid request to GitHub API. Please check repository access.';
+            } else if (error.message.includes('404')) {
+                errorMessage = 'Repository not found. Please check repository name and permissions.';
+            } else if (error.message.includes('401') || error.message.includes('403')) {
+                errorMessage = 'GitHub authentication failed. Please check your PAT token.';
+            }
+            
+            chrome.notifications.create({
+                type: 'basic',
+                iconUrl: 'icons/icon48.png',
+                title: 'CSES Sync Error',
+                message: `Failed to push "${problemData.problemName}": ${errorMessage}`,
+                priority: 2
+            });
         }
     }
 });
 
-console.log("CSES Sync Background: Service Worker started.");
+// Test storage immediately on startup
+chrome.storage.sync.get(['githubPat']).then(result => {
+    console.log("🔑 PAT status:", !!result.githubPat ? "Available" : "Not set");
+});
