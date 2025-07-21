@@ -3,8 +3,12 @@
   "name": "CSES Sync",
   "version": "1.0",
   "description": "An extension designed to synchronize your CSES problem solutions with GitHub.",
-  "permissions": ["activeTab", "storage", "notifications"],
-  "host_permissions": ["*://api.github.com/*"],
+  "permissions": ["activeTab", "storage", "notifications", "identity"],
+  "host_permissions": ["*://api.github.com/*", "*://github.com/*"],
+  "oauth2": {
+    "client_id": "Ov23litFdmGxnoiRmInN",
+    "scopes": ["repo"]
+  },
   "content_scripts": [
     {
       "matches": ["*://cses.fi/*"],
