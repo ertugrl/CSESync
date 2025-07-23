@@ -352,6 +352,8 @@ async function handleCsesSubmission(message) {
         return;
     }
 
+    // Get OAuth token from storage
+    const result = await chrome.storage.sync.get(['githubToken', 'githubUser']);
     const githubToken = result.githubToken;
     const githubUser = result.githubUser;
 
@@ -361,7 +363,7 @@ async function handleCsesSubmission(message) {
             type: 'basic',
             iconUrl: 'icons/icon48.png',
             title: 'CSES Sync Error',
-            message: 'GitHub girişi yapılmamış. Lütfen extension popup\'tan giriş yapın.',
+            message: 'GitHub not signed in. Please sign in from extension popup.',
             priority: 2
         });
         return; 
@@ -369,7 +371,7 @@ async function handleCsesSubmission(message) {
 
     // GitHub repository details - Use authenticated user's username
     const owner = githubUser.login; // Use authenticated user's username
-    const repo = 'CSES-Solutions';  // Repository name
+    const repo = 'testRepo';  // Repository name
 
     console.log(`🐙 Target: ${owner}/${repo}`);
 

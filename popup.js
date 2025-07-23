@@ -63,12 +63,12 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 console.log("❌ User is not authenticated");
                 showNotAuthenticated();
-                showStatus('GitHub hesabınızla giriş yapın', 'info');
+                showStatus('Sign in with your GitHub account', 'info');
             }
         } catch (error) {
             console.error("❌ Error checking auth status:", error);
             showNotAuthenticated();
-            showStatus('Kimlik doğrulama durumu kontrol edilemedi', 'error');
+            showStatus('Could not check authentication status', 'error');
         }
     }
 
@@ -102,26 +102,26 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (pollResult && pollResult.success) {
                     console.log("✅ Device Flow successful");
                     showAuthenticated(pollResult.user);
-                    showStatus('GitHub girişi başarılı!', 'success');
+                    showStatus('GitHub sign in successful!', 'success');
                     
                     // Auto-hide success message after 3 seconds
                     setTimeout(hideStatus, 3000);
                 } else {
-                    const errorMsg = pollResult && pollResult.error ? pollResult.error : 'Polling başarısız';
+                    const errorMsg = pollResult && pollResult.error ? pollResult.error : 'Polling failed';
                     console.error("❌ Device Flow polling failed:", errorMsg);
                     showNotAuthenticated();
-                    showStatus(`Giriş başarısız: ${errorMsg}`, 'error');
+                    showStatus(`Sign in failed: ${errorMsg}`, 'error');
                 }
             } else {
-                const errorMsg = deviceResult && deviceResult.error ? deviceResult.error : 'Device code alınamadı';
+                const errorMsg = deviceResult && deviceResult.error ? deviceResult.error : 'Could not get device code';
                 console.error("❌ Device Flow failed:", errorMsg);
                 showNotAuthenticated();
-                showStatus(`Giriş başarısız: ${errorMsg}`, 'error');
+                showStatus(`Sign in failed: ${errorMsg}`, 'error');
             }
         } catch (error) {
             console.error("❌ Device Flow error:", error);
             showNotAuthenticated();
-            showStatus('Giriş sırasında hata oluştu', 'error');
+            showStatus('An error occurred during sign in', 'error');
         }
     }
 
@@ -134,19 +134,19 @@ document.addEventListener('DOMContentLoaded', () => {
             <div style="text-align: center; padding: 15px;">
                 <h3 style="color: #333; margin-bottom: 15px;">📱 GitHub Device Flow</h3>
                 <div style="background: #f8f9fa; padding: 15px; border-radius: 6px; margin-bottom: 15px;">
-                    <p style="margin: 0 0 10px 0; font-size: 14px;">Aşağıdaki kodu GitHub'da girin:</p>
+                    <p style="margin: 0 0 10px 0; font-size: 14px;">Enter this code on GitHub:</p>
                     <div style="font-size: 24px; font-weight: bold; font-family: monospace; color: #0366d6; margin: 10px 0;">${deviceInfo.user_code}</div>
                 </div>
                 <a href="${deviceInfo.verification_uri}" target="_blank" 
                    style="display: inline-block; background: #28a745; color: white; padding: 10px 20px; text-decoration: none; border-radius: 6px; font-size: 14px; margin-bottom: 10px;">
-                   🔗 GitHub'da Onayla
+                   🔗 Authorize on GitHub
                 </a>
                 <p style="font-size: 12px; color: #666; margin: 10px 0 0 0;">
-                   Onayladıktan sonra otomatik giriş yapılacak...
+                   Automatic sign in after authorization...
                 </p>
                 <div style="margin-top: 15px;">
                     <div class="spinner" style="margin: 0 auto;"></div>
-                    <p style="font-size: 12px; color: #666; margin: 5px 0 0 0;">Token bekleniyor...</p>
+                    <p style="font-size: 12px; color: #666; margin: 5px 0 0 0;">Waiting for token...</p>
                 </div>
             </div>
         `;
@@ -168,17 +168,17 @@ document.addEventListener('DOMContentLoaded', () => {
             if (result.success) {
                 console.log("✅ Logout successful");
                 showNotAuthenticated();
-                showStatus('Çıkış yapıldı', 'success');
+                showStatus('Signed out successfully', 'success');
                 
                 // Auto-hide message after 2 seconds
                 setTimeout(hideStatus, 2000);
             } else {
                 console.error("❌ Logout failed:", result.error);
-                showStatus(`Çıkış hatası: ${result.error}`, 'error');
+                showStatus(`Sign out error: ${result.error}`, 'error');
             }
         } catch (error) {
             console.error("❌ Logout error:", error);
-            showStatus('Çıkış sırasında hata oluştu', 'error');
+            showStatus('An error occurred during sign out', 'error');
         }
     }
 
