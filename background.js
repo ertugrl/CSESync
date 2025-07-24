@@ -369,9 +369,30 @@ async function handleCsesSubmission(message) {
         return; 
     }
 
-    // GitHub repository details - Use authenticated user's username
-    const owner = githubUser.login; // Use authenticated user's username
-    const repo = 'testRepo';  // Repository name
+    // Get repository configuration
+    const repoResult = await chrome.storage.sync.get(['repoOwner', 'repoName']);
+    let owner, repo;
+    
+    if (repoResult.repoOwner && repoResult.repoName) {
+        // Use configured repository
+        owner = repoResult.repoOwner;
+        repo = repoResult.repoName;
+        console.log("✅ Using configured repository:", owner + "/" + repo);
+    } else {
+        // Fallback to authenticated user's username with default repo name
+        owner = githubUser.login;
+        repo = 'CSES-Solutions';
+        console.log("⚠️ No repository configured, using default:", owner + "/" + repo);
+        
+        // Show notification to configure repository
+        chrome.notifications.create({
+            type: 'basic',
+            iconUrl: 'icons/icon48.png',
+            title: 'CSES Sync Info',
+            message: 'Using default repository. Configure your repository in extension settings.',
+            priority: 1
+        });
+    }
 
     console.log(`🐙 Target: ${owner}/${repo}`);
 

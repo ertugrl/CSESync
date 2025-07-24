@@ -7,11 +7,14 @@ document.addEventListener('DOMContentLoaded', () => {
     
     const loginButton = document.getElementById('loginButton');
     const logoutButton = document.getElementById('logoutButton');
+    const settingsButton = document.getElementById('settingsButton');
     const notAuthenticatedDiv = document.getElementById('notAuthenticated');
     const authenticatedDiv = document.getElementById('authenticated');
     const loadingDiv = document.getElementById('loading');
     const statusMessage = document.getElementById('statusMessage');
     const usernameSpan = document.getElementById('username');
+    const repoInfoDiv = document.getElementById('repoInfo');
+    const repoLink = document.getElementById('repoLink');
 
     // Utility functions
     function showStatus(message, type = 'info') {
@@ -40,6 +43,9 @@ document.addEventListener('DOMContentLoaded', () => {
         notAuthenticatedDiv.style.display = 'none';
         authenticatedDiv.style.display = 'block';
         usernameSpan.textContent = userInfo.login || 'Unknown';
+        
+        // Load and display repository info
+        loadRepositoryInfo();
     }
 
     function showNotAuthenticated() {
@@ -47,6 +53,39 @@ document.addEventListener('DOMContentLoaded', () => {
         notAuthenticatedDiv.style.display = 'block';
         authenticatedDiv.style.display = 'none';
         usernameSpan.textContent = '-';
+        repoInfoDiv.style.display = 'none';
+    }
+
+    // Load repository information
+    async function loadRepositoryInfo() {
+        console.log("📁 Loading repository information...");
+        
+        try {
+            const result = await chrome.storage.sync.get(['repoOwner', 'repoName', 'repoUrl']);
+            
+            if (result.repoOwner && result.repoName) {
+                const repoUrl = result.repoUrl || `https://github.com/${result.repoOwner}/${result.repoName}`;
+                
+                console.log("✅ Repository configured:", result.repoOwner + "/" + result.repoName);
+                
+                // Show repository info
+                repoLink.href = repoUrl;
+                repoLink.textContent = `${result.repoOwner}/${result.repoName}`;
+                repoInfoDiv.style.display = 'block';
+            } else {
+                console.log("ℹ️ No repository configured");
+                repoInfoDiv.style.display = 'none';
+            }
+        } catch (error) {
+            console.error("❌ Error loading repository info:", error);
+            repoInfoDiv.style.display = 'none';
+        }
+    }
+
+    // Navigation to settings
+    function openSettings() {
+        console.log("⚙️ Opening settings page...");
+        window.location.href = 'settings.html';
     }
 
     // Check current authentication status
@@ -185,6 +224,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Event listeners
     loginButton.addEventListener('click', loginWithGitHub);
     logoutButton.addEventListener('click', logout);
+    settingsButton.addEventListener('click', openSettings);
 
     // Initialize
     checkAuthStatus();

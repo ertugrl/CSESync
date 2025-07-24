@@ -18,6 +18,31 @@
       font-size: 1.3em;
       text-align: center;
     }
+    .nav-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #ddd;
+    }
+    .nav-header h2 {
+      margin: 0;
+      font-size: 1.2em;
+    }
+    .settings-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 18px;
+      color: #666;
+      padding: 5px;
+      border-radius: 4px;
+    }
+    .settings-btn:hover {
+      background-color: #e9ecef;
+      color: #333;
+    }
     .auth-section {
       margin-bottom: 20px;
       padding: 15px;
@@ -76,6 +101,25 @@
       color: #155724;
       font-size: 0.9em;
     }
+    .repo-info {
+      background: #fff3cd;
+      border: 1px solid #ffeaa7;
+      padding: 10px;
+      border-radius: 6px;
+      margin-top: 10px;
+    }
+    .repo-info p {
+      margin: 0;
+      font-size: 0.85em;
+      color: #856404;
+    }
+    .repo-info a {
+      color: #0366d6;
+      text-decoration: none;
+    }
+    .repo-info a:hover {
+      text-decoration: underline;
+    }
     #statusMessage {
       margin-top: 15px;
       padding: 10px;
@@ -117,7 +161,12 @@
   </style>
 </head>
 <body>
-  <h2>🔗 CSES Sync</h2>
+  <div class="nav-header">
+    <h2>🔗 CSES Sync</h2>
+    <button id="settingsButton" class="settings-btn" title="Settings">
+      ⚙️
+    </button>
+  </div>
   
   <div class="auth-section">
     <div id="notAuthenticated" style="display: none;">
@@ -137,6 +186,14 @@
         <h3>✅ Connected Successfully</h3>
         <p id="userInfo">GitHub: <span id="username">-</span></p>
       </div>
+      
+      <div id="repoInfo" class="repo-info" style="display: none;">
+        <p><strong>Repository:</strong> <a id="repoLink" href="#" target="_blank">-</a></p>
+        <p style="margin-top: 5px; font-size: 0.8em;">
+          Configure repository in <strong>Settings ⚙️</strong>
+        </p>
+      </div>
+      
       <button id="logoutButton" class="logout-btn">
         Sign Out
       </button>
