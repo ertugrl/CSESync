@@ -12,16 +12,24 @@ document.addEventListener('DOMContentLoaded', () => {
     const currentRepoDiv = document.getElementById('currentRepo');
     const repoStatusP = document.getElementById('repoStatus');
 
-    // Utility functions
+    // Utility functions for display control
+    function showElement(element) {
+        element.classList.remove('hidden');
+    }
+    
+    function hideElement(element) {
+        element.classList.add('hidden');
+    }
+    
     function showStatus(message, type = 'info') {
         statusMessage.textContent = message;
         statusMessage.className = type;
-        statusMessage.style.display = 'block';
+        showElement(statusMessage);
         console.log(`📱 Status (${type}): ${message}`);
     }
 
     function hideStatus() {
-        statusMessage.style.display = 'none';
+        hideElement(statusMessage);
     }
 
     // Parse GitHub URL to extract owner and repo

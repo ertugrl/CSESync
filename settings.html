@@ -3,166 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <title>CSES Sync - Settings</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      width: 350px;
-      padding: 20px;
-      background-color: #f4f4f4;
-      border-radius: 8px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    }
-    .nav-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 20px;
-      padding-bottom: 10px;
-      border-bottom: 1px solid #ddd;
-    }
-    .nav-header h2 {
-      margin: 0;
-      font-size: 1.2em;
-    }
-    .back-btn {
-      background: none;
-      border: none;
-      cursor: pointer;
-      font-size: 18px;
-      color: #666;
-      padding: 5px;
-      border-radius: 4px;
-    }
-    .back-btn:hover {
-      background-color: #e9ecef;
-      color: #333;
-    }
-    .settings-section {
-      margin-bottom: 20px;
-      padding: 15px;
-      background: white;
-      border-radius: 6px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    }
-    .form-group {
-      margin-bottom: 15px;
-    }
-    .form-group label {
-      display: block;
-      margin-bottom: 5px;
-      color: #333;
-      font-weight: 500;
-      font-size: 0.9em;
-    }
-    .form-group input {
-      width: 100%;
-      padding: 10px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      font-size: 0.9em;
-      box-sizing: border-box;
-    }
-    .form-group input:focus {
-      outline: none;
-      border-color: #007bff;
-      box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
-    }
-    .help-text {
-      font-size: 0.8em;
-      color: #666;
-      margin-top: 5px;
-    }
-    .save-btn {
-      background-color: #28a745;
-      color: white;
-      padding: 10px 16px;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 0.9em;
-      width: 100%;
-    }
-    .save-btn:hover {
-      background-color: #218838;
-    }
-    .save-btn:disabled {
-      background-color: #6c757d;
-      cursor: not-allowed;
-    }
-    .current-repo {
-      background: #e3f2fd;
-      border: 1px solid #bbdefb;
-      padding: 12px;
-      border-radius: 6px;
-      margin-bottom: 15px;
-    }
-    .current-repo h4 {
-      margin: 0 0 8px 0;
-      color: #1976d2;
-      font-size: 0.9em;
-    }
-    .current-repo p {
-      margin: 0;
-      font-size: 0.85em;
-      color: #1976d2;
-    }
-    .current-repo a {
-      color: #0366d6;
-      text-decoration: none;
-    }
-    .current-repo a:hover {
-      text-decoration: underline;
-    }
-    .no-repo {
-      background: #fff3cd;
-      border: 1px solid #ffeaa7;
-      color: #856404;
-    }
-    .no-repo h4 {
-      color: #856404;
-    }
-    .no-repo p {
-      color: #856404;
-    }
-    .example-box {
-      background: #f8f9fa;
-      border: 1px solid #e9ecef;
-      padding: 10px;
-      border-radius: 4px;
-      margin-top: 10px;
-    }
-    .example-box h5 {
-      margin: 0 0 8px 0;
-      font-size: 0.8em;
-      color: #495057;
-    }
-    .example-box code {
-      background: #e9ecef;
-      padding: 2px 4px;
-      border-radius: 3px;
-      font-size: 0.8em;
-      color: #495057;
-    }
-    #statusMessage {
-      margin-top: 15px;
-      padding: 10px;
-      border-radius: 4px;
-      font-size: 0.9em;
-      color: #007bff;
-      background: #e3f2fd;
-      border: 1px solid #bbdefb;
-    }
-    .error {
-      color: #721c24;
-      background: #f8d7da;
-      border-color: #f5c6cb;
-    }
-    .success {
-      color: #155724;
-      background: #d4edda;
-      border-color: #c3e6cb;
-    }
-  </style>
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/settings.css">
 </head>
 <body>
   <div class="nav-header">
@@ -170,7 +12,7 @@
       ⬅️
     </button>
     <h2>⚙️ Settings</h2>
-    <div style="width: 28px;"></div> <!-- Spacer for centering -->
+    <div class="spacer"></div> <!-- Spacer for centering -->
   </div>
   
   <div class="settings-section">
@@ -197,7 +39,7 @@
     </button>
   </div>
 
-  <div id="statusMessage" style="display: none;"></div>
+  <div id="statusMessage" class="hidden"></div>
 
   <script src="settings.js"></script>
 </body>

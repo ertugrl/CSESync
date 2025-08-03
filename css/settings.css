@@ -1,0 +1,159 @@
+/* CSES Sync Extension - Settings Specific Styles */
+
+.settings-section {
+  margin-bottom: 20px;
+  padding: 15px;
+  background: white;
+  border-radius: 6px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+/* Form specific styles that override common ones */
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  color: #333;
+  font-weight: 500;
+  font-size: 0.9em;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 0.9em;
+  box-sizing: border-box;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
+}
+
+/* Help Text */
+.help-text {
+  font-size: 0.8em;
+  color: #666;
+  margin-top: 5px;
+}
+
+/* Save Button */
+.save-btn {
+  background-color: #28a745;
+  color: white;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9em;
+  width: 100%;
+  transition: background-color 0.2s;
+}
+
+.save-btn:hover {
+  background-color: #218838;
+}
+
+.save-btn:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+}
+
+/* Current Repository Info */
+.current-repo {
+  background: #e3f2fd;
+  border: 1px solid #bbdefb;
+  padding: 12px;
+  border-radius: 6px;
+  margin-bottom: 15px;
+}
+
+.current-repo h4 {
+  margin: 0 0 8px 0;
+  color: #1976d2;
+  font-size: 0.9em;
+}
+
+.current-repo p {
+  margin: 0;
+  font-size: 0.85em;
+  color: #1976d2;
+}
+
+.current-repo a {
+  color: #0366d6;
+  text-decoration: none;
+}
+
+.current-repo a:hover {
+  text-decoration: underline;
+}
+
+/* No Repository State */
+.no-repo {
+  background: #fff3cd;
+  border: 1px solid #ffeaa7;
+  color: #856404;
+}
+
+.no-repo h4 {
+  color: #856404;
+}
+
+.no-repo p {
+  color: #856404;
+}
+
+/* Example Box */
+.example-box {
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  padding: 10px;
+  border-radius: 4px;
+  margin-top: 10px;
+}
+
+.example-box h5 {
+  margin: 0 0 8px 0;
+  font-size: 0.8em;
+  color: #495057;
+}
+
+.example-box code {
+  background: #e9ecef;
+  padding: 2px 4px;
+  border-radius: 3px;
+  font-size: 0.8em;
+  color: #495057;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+}
+
+.example-box p {
+  margin: 4px 0;
+  font-size: 0.85em;
+}
+
+/* Settings specific status messages */
+#statusMessage {
+  margin-top: 15px;
+  padding: 10px;
+  border-radius: 4px;
+  font-size: 0.9em;
+  color: #007bff;
+  background: #e3f2fd;
+  border: 1px solid #bbdefb;
+}
+
+#statusMessage.error {
+  color: #721c24;
+  background: #f8d7da;
+  border-color: #f5c6cb;
+}
+
+#statusMessage.success {
+  color: #155724;
+  background: #d4edda;
+  border-color: #c3e6cb;
+}

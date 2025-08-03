@@ -16,32 +16,40 @@ document.addEventListener('DOMContentLoaded', () => {
     const repoInfoDiv = document.getElementById('repoInfo');
     const repoLink = document.getElementById('repoLink');
 
-    // Utility functions
+    // Utility functions for display control
+    function showElement(element) {
+        element.classList.remove('hidden');
+    }
+    
+    function hideElement(element) {
+        element.classList.add('hidden');
+    }
+    
     function showStatus(message, type = 'info') {
         statusMessage.textContent = message;
         statusMessage.className = type;
-        statusMessage.style.display = 'block';
+        showElement(statusMessage);
         console.log(`📱 Status (${type}): ${message}`);
     }
 
     function hideStatus() {
-        statusMessage.style.display = 'none';
+        hideElement(statusMessage);
     }
 
     function showLoading() {
-        notAuthenticatedDiv.style.display = 'none';
-        authenticatedDiv.style.display = 'none';
-        loadingDiv.style.display = 'block';
+        hideElement(notAuthenticatedDiv);
+        hideElement(authenticatedDiv);
+        showElement(loadingDiv);
     }
 
     function hideLoading() {
-        loadingDiv.style.display = 'none';
+        hideElement(loadingDiv);
     }
 
     function showAuthenticated(userInfo) {
         hideLoading();
-        notAuthenticatedDiv.style.display = 'none';
-        authenticatedDiv.style.display = 'block';
+        hideElement(notAuthenticatedDiv);
+        showElement(authenticatedDiv);
         usernameSpan.textContent = userInfo.login || 'Unknown';
         
         // Load and display repository info
@@ -50,10 +58,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function showNotAuthenticated() {
         hideLoading();
-        notAuthenticatedDiv.style.display = 'block';
-        authenticatedDiv.style.display = 'none';
+        showElement(notAuthenticatedDiv);
+        hideElement(authenticatedDiv);
         usernameSpan.textContent = '-';
-        repoInfoDiv.style.display = 'none';
+        hideElement(repoInfoDiv);
     }
 
     // Load repository information
@@ -71,14 +79,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Show repository info
                 repoLink.href = repoUrl;
                 repoLink.textContent = `${result.repoOwner}/${result.repoName}`;
-                repoInfoDiv.style.display = 'block';
+                showElement(repoInfoDiv);
             } else {
                 console.log("ℹ️ No repository configured");
-                repoInfoDiv.style.display = 'none';
+                hideElement(repoInfoDiv);
             }
         } catch (error) {
             console.error("❌ Error loading repository info:", error);
-            repoInfoDiv.style.display = 'none';
+            hideElement(repoInfoDiv);
         }
     }
 
@@ -170,27 +178,26 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Update UI to show device code
         notAuthenticatedDiv.innerHTML = `
-            <div style="text-align: center; padding: 15px;">
-                <h3 style="color: #333; margin-bottom: 15px;">📱 GitHub Device Flow</h3>
-                <div style="background: #f8f9fa; padding: 15px; border-radius: 6px; margin-bottom: 15px;">
-                    <p style="margin: 0 0 10px 0; font-size: 14px;">Enter this code on GitHub:</p>
-                    <div style="font-size: 24px; font-weight: bold; font-family: monospace; color: #0366d6; margin: 10px 0;">${deviceInfo.user_code}</div>
+            <div class="device-flow-container">
+                <h3 class="device-flow-title">📱 GitHub Device Flow</h3>
+                <div class="device-flow-box">
+                    <p class="device-flow-instruction">Enter this code on GitHub:</p>
+                    <div class="device-code">${deviceInfo.user_code}</div>
                 </div>
-                <a href="${deviceInfo.verification_uri}" target="_blank" 
-                   style="display: inline-block; background: #28a745; color: white; padding: 10px 20px; text-decoration: none; border-radius: 6px; font-size: 14px; margin-bottom: 10px;">
+                <a href="${deviceInfo.verification_uri}" target="_blank" class="github-auth-link">
                    🔗 Authorize on GitHub
                 </a>
-                <p style="font-size: 12px; color: #666; margin: 10px 0 0 0;">
+                <p class="device-flow-note">
                    Automatic sign in after authorization...
                 </p>
-                <div style="margin-top: 15px;">
-                    <div class="spinner" style="margin: 0 auto;"></div>
-                    <p style="font-size: 12px; color: #666; margin: 5px 0 0 0;">Waiting for token...</p>
+                <div class="spinner-container">
+                    <div class="spinner spinner-center"></div>
+                    <p class="waiting-note">Waiting for token...</p>
                 </div>
             </div>
         `;
         
-        notAuthenticatedDiv.style.display = 'block';
+        notAuthenticatedDiv.classList.remove('hidden');
     }
 
     // Logout

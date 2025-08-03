@@ -1,0 +1,127 @@
+/* CSES Sync Extension - Popup Specific Styles */
+
+.auth-section {
+  margin-bottom: 20px;
+  padding: 15px;
+  background: white;
+  border-radius: 6px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+/* GitHub Button */
+.github-btn {
+  background-color: #24292e;
+  color: white;
+  padding: 12px 16px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 1em;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: background-color 0.2s;
+}
+
+.github-btn:hover {
+  background-color: #1a1e22;
+}
+
+.github-btn:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+}
+
+/* Logout Button */
+.logout-btn {
+  background-color: #dc3545;
+  color: white;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9em;
+  width: 100%;
+  margin-top: 10px;
+  transition: background-color 0.2s;
+}
+
+.logout-btn:hover {
+  background-color: #c82333;
+}
+
+/* User Info Section */
+.user-info {
+  background: #e8f5e8;
+  padding: 12px;
+  border-radius: 6px;
+  margin-bottom: 10px;
+}
+
+.user-info h3 {
+  margin: 0 0 8px 0;
+  color: #155724;
+  font-size: 1em;
+}
+
+.user-info p {
+  margin: 0;
+  color: #155724;
+  font-size: 0.9em;
+}
+
+/* Repository Info */
+.repo-info {
+  background: #fff3cd;
+  border: 1px solid #ffeaa7;
+  padding: 10px;
+  border-radius: 6px;
+  margin-top: 10px;
+}
+
+.repo-info p {
+  margin: 0;
+  font-size: 0.85em;
+  color: #856404;
+}
+
+.repo-info a {
+  color: #0366d6;
+  text-decoration: none;
+}
+
+.repo-info a:hover {
+  text-decoration: underline;
+}
+
+/* Status Messages for Popup */
+#statusMessage {
+  margin-top: 15px;
+  padding: 10px;
+  border-radius: 4px;
+  font-size: 0.9em;
+  color: #007bff;
+  background: #e3f2fd;
+  border: 1px solid #bbdefb;
+}
+
+#statusMessage.error {
+  color: #721c24;
+  background: #f8d7da;
+  border-color: #f5c6cb;
+}
+
+#statusMessage.success {
+  color: #155724;
+  background: #d4edda;
+  border-color: #c3e6cb;
+}
+
+/* Loading State */
+.loading {
+  display: none;
+  text-align: center;
+  color: #6c757d;
+}
