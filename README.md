@@ -1,4 +1,4 @@
-# CSES Sync - Automatic GitHub Integration for Competitive Programming
+# CSESync - Automatic GitHub Integration for Competitive Programming
 
 #### Video Demo: "https://youtu.be/XentLk-gjHw"
 
