@@ -1,14 +1,10 @@
 {
   "manifest_version": 3,
   "name": "CSES Sync",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Automatically sync your accepted CSES competitive programming solutions to GitHub. Track your progress and build your coding portfolio effortlessly.",
-  "permissions": ["activeTab", "storage", "notifications", "identity"],
+  "permissions": ["storage", "notifications"],
   "host_permissions": ["*://api.github.com/*", "*://github.com/*", "*://cses.fi/*"],
-  "oauth2": {
-    "client_id": "Ov23litFdmGxnoiRmInN",
-    "scopes": ["repo"]
-  },
   "content_scripts": [
     {
       "matches": ["*://cses.fi/*"],
