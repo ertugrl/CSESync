@@ -383,13 +383,20 @@ async function fetchProblemContentAndProcess(problemId, problemUrl) {
         const titleElement = doc.querySelector('h1');
         problemTitle = titleElement ? titleElement.textContent.trim() : `Problem ${problemId}`;
         
-        // Extract problem description
-        const contentElements = doc.querySelectorAll('p, div');
-        for (let element of contentElements) {
-            const text = element.textContent.trim();
-            if (text.length > 50 && !text.includes('Time limit') && !text.includes('Memory limit')) {
-                problemDescription = text;
-                break;
+        // Extract problem description from the exact selector requested
+        const exactSelector = 'body > div.skeleton > div.content-wrapper > div.content > div > p:nth-child(1)';
+        const descEl = doc.querySelector(exactSelector);
+        if (descEl && descEl.textContent) {
+            problemDescription = descEl.textContent.trim();
+        } else {
+            // Fallback: previous heuristic if the structure changes
+            const contentElements = doc.querySelectorAll('p, div');
+            for (let element of contentElements) {
+                const text = element.textContent.trim();
+                if (text.length > 50 && !text.includes('Time limit') && !text.includes('Memory limit')) {
+                    problemDescription = text;
+                    break;
+                }
             }
         }
         
@@ -408,45 +415,71 @@ async function fetchProblemContentAndProcess(problemId, problemUrl) {
     const codeElements = document.querySelectorAll('pre, code, .code-block');
     let submittedCode = '';
     
-    for (let element of codeElements) {
-        // Try different methods to get the code content
-        let codeText = '';
-        
-        // Method 1: Try textContent first (preserves whitespace better)
-        codeText = element.textContent || '';
-        
-        // Method 2: If textContent doesn't have line breaks, try innerHTML and strip tags
-        if (codeText && (!codeText.includes('\n') || codeText.split('\n').length < 3)) {
-            const innerHTML = element.innerHTML;
-            if (innerHTML.includes('<br>') || innerHTML.includes('</div>') || innerHTML.includes('\n')) {
-                // Convert HTML line breaks to actual line breaks
-                codeText = innerHTML
-                    .replace(/<br\s*\/?>/gi, '\n')
-                    .replace(/<\/div>/gi, '\n')
-                    .replace(/<[^>]*>/g, '') // Remove all HTML tags
-                    .replace(/&lt;/g, '<')
-                    .replace(/&gt;/g, '>')
-                    .replace(/&amp;/g, '&')
-                    .replace(/&quot;/g, '"');
+    // Try exact Compiler report container first (each line is a child element)
+    try {
+        const exactCodeSelector = 'body > div.skeleton > div.content-wrapper > div.content > div:nth-child(5) > div > pre > div';
+        const codeLinesContainer = document.querySelector(exactCodeSelector);
+        if (codeLinesContainer) {
+            console.log('🔎 Found compiler report code container. Collecting lines...');
+            const lines = [];
+            const children = codeLinesContainer.children;
+            for (let i = 0; i < children.length; i++) {
+                const lineText = (children[i].textContent || '')
+                    .replace(/\r\n/g, '\n')
+                    .replace(/\r/g, '\n');
+                lines.push(lineText);
+            }
+            const joined = lines.join('\n').trim();
+            if (joined) {
+                submittedCode = formatCode(joined);
+                console.log(`✅ STEP 3: Code collected from compiler report container (${submittedCode.split('\n').length} lines)`);
             }
         }
-        
-        codeText = codeText.trim();
-        
-        console.log(`🔍 Checking element: ${element.tagName}, content length: ${codeText.length}`);
-        console.log(`   Has newlines: ${codeText.includes('\n')}, line count: ${codeText.split('\n').length}`);
-        
-        if (codeText.length > 20 && (
-            codeText.includes('#include') || 
-            codeText.includes('int main') || 
-            codeText.includes('using namespace')
-        )) {
-            console.log(`✅ Found code element with ${codeText.split('\n').length} lines`);
+    } catch (e) {
+        console.warn('⚠️ Compiler report container parsing failed:', e.message);
+    }
+    
+    if (!submittedCode) {
+        for (let element of codeElements) {
+            // Try different methods to get the code content
+            let codeText = '';
             
-            // Apply formatting to improve readability
-            submittedCode = formatCode(codeText);
-            console.log(`✅ STEP 3: Code extracted and formatted (${submittedCode.length} chars, ${submittedCode.split('\n').length} lines)`);
-            break;
+            // Method 1: Try textContent first (preserves whitespace better)
+            codeText = element.textContent || '';
+            
+            // Method 2: If textContent doesn't have line breaks, try innerHTML and strip tags
+            if (codeText && (!codeText.includes('\n') || codeText.split('\n').length < 3)) {
+                const innerHTML = element.innerHTML;
+                if (innerHTML.includes('<br>') || innerHTML.includes('</div>') || innerHTML.includes('\n')) {
+                    // Convert HTML line breaks to actual line breaks
+                    codeText = innerHTML
+                        .replace(/<br\s*\/?>/gi, '\n')
+                        .replace(/<\/div>/gi, '\n')
+                        .replace(/<[^>]*>/g, '') // Remove all HTML tags
+                        .replace(/&lt;/g, '<')
+                        .replace(/&gt;/g, '>')
+                        .replace(/&amp;/g, '&')
+                        .replace(/&quot;/g, '"');
+                }
+            }
+            
+            codeText = codeText.trim();
+            
+            console.log(`🔍 Checking element: ${element.tagName}, content length: ${codeText.length}`);
+            console.log(`   Has newlines: ${codeText.includes('\n')}, line count: ${codeText.split('\n').length}`);
+            
+            if (codeText.length > 20 && (
+                codeText.includes('#include') || 
+                codeText.includes('int main') || 
+                codeText.includes('using namespace')
+            )) {
+                console.log(`✅ Found code element with ${codeText.split('\n').length} lines`);
+                
+                // Apply formatting to improve readability
+                submittedCode = formatCode(codeText);
+                console.log(`✅ STEP 3: Code extracted and formatted (${submittedCode.length} chars, ${submittedCode.split('\n').length} lines)`);
+                break;
+            }
         }
     }
     
