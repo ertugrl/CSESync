@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "CSES Sync",
+  "name": "CSESync",
   "version": "1.0.1",
   "description": "Automatically sync your accepted CSES competitive programming solutions to GitHub. Track your progress and build your coding portfolio effortlessly.",
   "permissions": ["storage", "notifications"],
