@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "CSESync",
   "version": "1.0.1",
-  "description": "Automatically sync your accepted CSES competitive programming solutions to GitHub. Track your progress and build your coding portfolio effortlessly.",
+  "description": "Auto-sync accepted CSES solutions to GitHub. Track progress and showcase your portfolio.",
   "permissions": ["storage", "notifications"],
   "host_permissions": ["*://api.github.com/*", "*://github.com/*", "*://cses.fi/*"],
   "content_scripts": [
